@@ -1,0 +1,263 @@
+
+Introdução
+
+
+Ter fluência no uso da linha de comando é um pré-requisito para qualquer bom administrador. Usar o prompt é, de certa forma, muito parecido com aparecer uma segunda língua, onde os comandos equivalem às palavras e a sintaxe e os argumentos usados equivalem à gramática. A única forma de adquirir um bom vocabulário e, principalmente, de entender a gramática é estudando, mas, por outro lado, a única forma de adquirir fluência é realmente falando, o que na nossa analogia equivale a acumular "horas de vôo" no uso do terminal.
+
+No começo é normal que você fique catando milho e precise pesquisar e olhar as páginas de manual para se lembrar mesmo dos comandos mais simples, mas, com o tempo, usar o terminal acaba sendo uma coisa tão natural quanto falar ou escrever. O importante é não desanimar.
+
+Este é um tutorial de duas partes destinado a servir como uma guia de referência para o uso da linha de comando e dos utilitários básicos de administração do sistema. Ela não tem o objetivo de esgotar o assunto, mas pode ter certeza que encontrará muitas dicas.
+
+Vamos começar com uma revisão dos comandos básicos do terminal, junto com algumas dicas úteis.
+
+cd : Possivelmente o comando mais básico do prompt, permite navegar entre diretórios, como em "cd /etc". Você pode tanto indicar o caminho completo até o diretório desejado, como em "cd /var/log/apache2", ou usar caminhos relativos, indicando o destino a partir do diretório atual. Se você está dentro da pasta "/etc" e quer acessar a pasta "/etc/bind", precisa digitar apenas "cd bind". Para subir um diretório, use "cd .." e, para subir dois níveis, use "cd ../..".
+
+pwd : Serve apenas para confirmar o diretório atual. É usado sem parâmetros, simplesmente "pwd".
+
+ls : Lista os arquivos dentro do diretório atual. Por padrão, ele mostra apenas os nomes dos arquivos e não mostra os arquivos ocultos. Para ver tudo, incluindo os arquivos ocultos, use "ls -a", para ver também as permissões de acesso e o tamanho dos arquivos, use o "ls -la". Para ver os tamanho dos arquivos especificados de forma legível ("329M" em vez de "344769698") adicione o parâmetro "h", como em "ls -lha". Você pode ver também os arquivos de qualquer diretório, sem ter que primeiro precisar usar o "cd" para acessá-lo. Para isso, basta indicar o diretório, como "ls -lha /etc".
+
+Em muitas distribuições, como no CentOS, o "ls" mostra uma listagem colorida, que torna fácil identificar os arquivos (pastas aparecem em azul, arquivos compactados em vermelho e assim por diante), o que torna mais fácil identificar os arquivos. Para ativar esse recurso em outras distribuições, adicione a linha:
+
+alias ls="ls --color=auto"
+
+
+... no final do arquivo "/etc/profile".
+
+Outra personalização muito usada é fazer com que os comandos "rm", "cp" e "mv" peçam confirmação, o que reduz a possibilidade de causar danos catastróficos ao digitar comandos incorretos. Para isso, adicione as três linhas abaixo no final do arquivo "/etc/profile":
+
+alias rm="rm -i"
+ alias mv="mv -i"
+ alias cp="cp -i"
+
+
+cp : O cp é um comando aparentemente simples, mas que esconde vários segredos. A sintaxe básica para copiar arquivos é usar o comando cp, seguido do nome do arquivo e a pasta para onde ele vai, como em "cp /etc/fstab /tmp". Entretanto, em sua forma básica o cp serve apenas para copiar arquivos isolados; para copiar pastas, é necessário que você adicione a opção "-r" (que ativa a cópia recursiva), como em "cp -r /home/gdh/* /backup/".
+
+Um parâmetro bastante útil é o "-a", que faz com que o cp sempre copie recursivamente, mantenha as permissões do arquivo original e preserve os links simbólicos que encontrar pelo caminho. Em resumo, faz o cp se comportar de uma forma mais simples e lógica, por isso você acaba usando-o quase sempre, em substituição ao "-r", como em:
+
+# cp -a /var/www /mnt/sda2/backup/
+
+
+Você pode ainda usar o "*" e a "?" como curingas quando quiser copiar vários arquivos. Para copiar todos os arquivos da pasta atual para a pasta "/mnt/hda6", por exemplo, use "cp * /mnt/hda6". A "?" por sua vez é mais contida, substituindo um único caractere. Por exemplo, "cp arquivo?.txt /mnt/hda6", copia o "arquivo1.txt", "arquivo2.txt" e o "arquivo3.txt", mas não o "arquivo21.txt".
+
+mv : O mv serve tanto para mover arquivos de um lugar para o outro, quanto para renomear arquivos, como em:
+
+# cd /etc/squid
+ # mv squid.conf squid.conf.modelo
+
+
+rm : Por padrão, o rm deleta apenas arquivos simples, como em "rm arquivo.txt". Para que ele remova pastas, é necessário adicionar parâmetro "-r", como em "rm -r arquivos/". Em muitas distribuições, o padrão do rm é pedir confirmação antes de remover cada arquivo, o que se torna inviável ao remover um diretório com diversos arquivos. A confirmação é eliminada ao adicionar o parâmetro "-f", o que nos leva ao "rm -rf" (que é o formato mais comumente usado).
+
+Tome cuidado ao usar o "-rf", pois ele não pede confirmação, deleta os arquivos diretamente. Você pode muito bem pensar em digitar "rm -rf ./*" (para apagar todos os arquivos do diretório atual) e, na pressa, acabar digitando "rm -rf /*", que apaga todos os arquivos do sistema, incluindo arquivos em todas as partições e em todos os compartilhamentos de rede que estiverem montados (!). Ou seja, ao usá-lo, respire fundo e verifique se realmente está deletando a pasta certa antes de pressionar Enter.
+
+É possível também usar caracteres curingas na hora de remover arquivos. Para remover todos que possuírem a extensão ".jpg", use "rm -f *.jpg". Para remover todos os arquivos que começarem com "img", use "rm -f img*". Lembre-se de que você pode usar também o "?" quando quiser usar o curinga para apenas um caractere específico. Se você quiser remover os arquivos "doc1.txt", "doc2.txt" e "doc3.txt", mas sem remover o "doc10.txt" e o "doc11.txt", você poderia usar o comando "rm -f doc?.txt".
+
+mkdir : Cria diretórios, como em "mkdir trabalhos" ou "mkdir /mnt/backup". Para criar pastas recursivamente (ou seja, criar todas as pastas necessárias até chegar a que você pediu, caso necessário), adicione o parâmetro "-p", como em:
+
+# mkdir -p /var/log/apache2
+
+
+rmdir : Remove diretórios. A diferença entre ele e o "rm -f" é que o rmdir remove apenas diretórios vazios, evitando acidentes.
+
+du : O du permite ver uma lista com o espaço ocupado por cada pasta dentro do diretório atual. É uma forma rápida de encontrar grandes arquivos ou pastas que estão consumindo muito espaço, como no caso de logs não rotacionados que crescem a ponto de ameaçarem ocupar todo o espaço livre na partição raiz do sistema.
+
+man : É impossível para um ser humano (pelo pelo para um ser humano normal ;) memorizar todos os parâmetros de mais do que um punhado de comandos. Assim como em outras áreas, você memoriza os parâmetros que usa com mais freqüência e tem apenas uma vaga noção sobre os demais.
+
+O prompt inclui um sistema de ajuda bastante detalhado, acessível através do comando man. Não apenas os comandos, mas também a grande maioria dos arquivos de configuração possuem páginas de manual com os parâmetros suportados. O principal objetivo das páginas de manual é listar as opções suportadas e não necessariamente serem uma leitura didática. Elas são mais úteis quando você já tem uma boa noção sobre o que o comando faz e precisa se lembrar de uma opção específica do que como um guia de estudos. Para usar, basta chamar o "man" seguido do comando desejado, como em "man ls".
+
+Dentro do leitor, use as setas para rolar a tela e, para sair, pressione a tecla "q". Como falei, existem manuais também para a muitos dos arquivos de configuração. Experimente usar o "man fstab" ou "man resolv.conf", por exemplo.
+
+Um pequeno truque é que você pode salvar o conteúdo das páginas do man em arquivos de texto (de forma a abrí-los em outro editor de texto, ou imprimir), direcionando a saída do comando para o arquivo desejado, como em:
+
+$ man ls > ls.txt
+
+
+A seta faz com que a saída do comando seja direcionada, indo para dentro do arquivo em vez de ser exibida na tela. O arquivo é automaticamente criado, caso não exista. Ao usar uma única seta (>) como no exemplo, o conteúdo do arquivo é subscrito, por isso é preciso um certo cuidado ao usar. Outra opção é usar duas setas (>>), o que faz com que o conteúdo seja adicionado ao final do arquivo, em vez de substituir o conteúdo anterior. As setas são exaustivamente usadas em shell scripts, pois permitem direcionar a saída de um comando para o outro, permitindo que eles sejam combinados das mais diversas formas.
+
+Devido à quantidade de parâmetros disponíveis, os manuais de muitos programas são muito longos e complicados. Por isso, muitos suportam o parâmetro "--help", que exibe uma ajuda resumida, contendo apenas os parâmetros mais usados. Experimente, por exemplo, o "ls --help". Se você quiser apenas uma descrição rápida do que um determinado comando faz, experimente o comando "whatis" (o que é), como em: "whatis ls".
+
+Mais uma variante do man é o comando "info", que contém manuais alternativos para muitos comandos. Enquanto os manuais do man são técnicos, desenvolvidos para serem manuais de referência, os do info normalmente utilizam uma linguagem mais simples, abordando apenas as opções mais comuns. Nem todos os comandos possuem uma página info, mas o número vem crescendo. Para usá-lo, basta digitar "info comando", como em "info ls". Se por acaso o comando "info" não estiver disponível, instale-o usando o gerenciador de pacotes, como em "apt-get install info".
+
+locate : Este é outro comando bastante útil. Ele permite encontrar arquivos de forma instantânea, servindo como uma espécie de busca indexada. Assim como mecanismos de busca, como o Google, o locate não sai procurando em todo o HD até achar o arquivo que pediu; ele procura apenas dentro de uma base de dados, que contém os nomes de todos os arquivos. Esta base é gerada ao rodar o comando "updatedb", que precisa ser executado pelo menos uma vez antes que você possa usá-lo.
+
+A vantagem de usar a base de dados é que as buscas são instantâneas, a desvantagem é que você precisa rodar o updatedb (como root) de vez em quando, a fim de incluir as últimas modificações. Para procurar um arquivo, simplesmente use "locate arquivo". Se você está procurando por um programa, experimente o comando "which", uma variante do locate que mostra apenas executáveis.
+
+find : O find também permite localizar arquivos, mas funciona da forma tradicional, realmente vasculhando os diretórios em busca dos arquivos, ao invés de usar uma base de dados, como o locate. Embora seja lento ao procurar em diretórios com muitos arquivos e subdiretórios, o find é eficiente se você souber previamente onde procurar. Por exemplo, o diretório "/etc" concentra as configurações do sistema. Se você estiver procurando pelo arquivo "smb.conf" (onde é armazenada a configuração do Samba), você poderia ir direto à fonte, usando o comando "find /etc -name smb.conf".
+
+Note que além do diretório onde ele vai procurar (/etc no exemplo), você deve usar o parâmetro "-name" antes de indicar o nome do arquivo que está procurando. Omitindo o diretório, ele simplesmente procura dentro do diretório atual. Você pode também fazer buscas por todos os arquivos com uma determinada extensão, como em "find /mnt/hda6 -name *.mp3".
+
+su: No Linux, existe uma separação clara entre o root e os demais usuários do sistema. O root é o único que pode alterar a configuração do sistema e usar a maior parte das ferramentas de configuração. Os usuários normais, por sua vez, podem usar os programas instalados e modificar arquivos dentro do seu diretório home. Esta organização permite que várias pessoas usem o mesmo micro (o que é vital no caso dos servidores), sem que um possa alterar as configurações do outro, nem muito menos mudar as configurações do sistema.
+
+O su permite que você se "promova" a root a qualquer momento. O uso básico é simplesmente digitar "su -", seguido da senha, como em:
+
+$ su -
+
+
+Password:
+
+
+O "$" do terminal vira um "#", alertando que a partir daí você tem plenos poderes. Se ao tentar abrir arquivos gráficos você receber uma mensagem dizendo que não é possível se conectar ao X, experimente usar o comando "sux" (se ele não estiver disponível, instale o pacote "sux") no lugar do su. Ele configura as permissões do servidor X corretamente.
+
+sudo : O Ubuntu e outras distribuições derivadas dele utilizam o sudo como um substituto à senha de root. Neles, a conta de root vem desativada por padrão e você executa comandos como root incluindo o "sudo" no início do comando, como em "sudo gedit /etc/fstab". Se preferir voltar ao sistema tradicional, usando o "su -" para se logar como root, basta destravar a conta de root usando o comando "sudo passwd".
+
+Assim como outros utilitários, o sudo possui um arquivo de configuração, o "/etc/sudoers", que permite definir quais usuários poderão usar o sudo e dentro de quais limitações. No Ubuntu, apenas o usuário administrativo criado durante a instalação pode usar o sudo, o que é determinado pela linha:
+
+
+%admin ALL=(ALL) ALL
+
+
+... dentro do arquivo. Isso faz com que todos os usuários do grupo "admin" (que originalmente contém apenas o usuário criado durante a instalação) possam usar o sudo para executar qualquer comando (ALL). Por segurança, o sudo solicita sua senha de usuário ao executar qualquer comando, uma última linha de proteção contra a possibilidade de alguém usar seu micro quando você não estiver por perto. Se preferir desativar a verificação, substitua a linha por:
+
+
+%admin ALL=NOPASSWD: ALL
+
+
+Se quiser "promover" outros logins, criados depois da instalação, de forma que eles também possam executar comandos usando o sudo, basta adicioná-los ao grupo "admin", como em:
+
+# adduser gdh admin
+
+
+cat : Além de permitir ver rapidamente o conteúdo de um arquivo, como em "cat /etc/fstab", ele também pode ser combinado com outros comandos para realizar tarefas mais complexas. Por exemplo, se você tem um arquivo "boot.img" com a imagem de um disquete de boot, não bastaria simplesmente copiar o arquivo para o disquete com o comando cp; você precisaria fazer uma cópia bit a bit. Existem várias formas de fazer isso, mas uma solução simples seria usar o comando "cat boot.img > /dev/fd0". Neste caso, ele lista o conteúdo do arquivo, mas ao invés de mostrar na tela ele o escreve no disquete (/dev/fd0). Você verá muitos usos úteis para estes recursos especiais ao estudar sobre shell script.
+
+&: No Linux, todos os aplicativos, mesmo os gráficos, podem ser chamados a partir de uma janela de terminal. O problema é que, ao chamar algum aplicativo, o terminal ficará bloqueado até que o aplicativo seja finalizado, obrigando-lhe a abrir um para cada programa.
+
+Acrescentar o & no final do comando, como em "gedit /etc/fstab &" resolve este problema, mantendo o terminal livre. Se você esquecer de acrescentar ao "&" ao abrir um programa, ainda pode "destravar" o terminal pressionando "Ctrl+Z" (que paralisa o programa e te devolve o controle do terminal) e depois "bg", que reinicia o programa em background.
+
+Alguns aplicativos exibem mensagens diversas e avisos depois de serem abertos, o que "suja" o terminal, mas sem comprometer o que você está fazendo. Se isto te incomodar, você pode adicionar um "&>/dev/null" ao comando, o que descarta todas as mensagens, como em:
+
+$ konqueror ~ & &>/dev/null
+
+
+O "~" é uma variável do terminal, que representa seu diretório home. Você pode usá-lo para abreviar comandos: para copiar a pasta "/mnt/sdc1/arquivos" para sua pasta home, você pode usar "cp -a /mnt/sdc1/arquivos ~", ao invés de digitar "cp -a cp -a /mnt/sdc1/arquivos /home/gdh", por exemplo.
+
+head: Este é um dos primos do cat, ele permite ver apenas as primeiras linhas do arquivo, ao invés de exibir tudo. Basta especificar o número de linhas que devem ser exibidas, como por exemplo "head -20 /var/log/apache2/access.log".
+
+Outro parente distante é o tail (cauda), que mostra as últimas linhas do arquivo. O uso é o mesmo, basta indicar o número de linhas que devem ser mostradas e o nome do arquivo, como em "tail -50 /var/log/squid/access.log". Como pode imaginar, ele é muito útil para acompanhar arquivos de log, que são atualizados continuamente. Como as novas entradas destes arquivos vão sendo inseridas no final do arquivo, o tail permite verificar rapidamente apenas as novas inclusões, sem precisar perder tempo abrindo o arquivo inteiro.
+
+Você pode obter um monitor de logs simples combinando o tail com o comando "watch", que permite executar um comando a cada 2 segundos, atualizando a tela automaticamente. Para acompanhar os logs de acesso do seu servidor web, por exemplo, você poderia usar:
+
+# watch tail -n 20 /var/log/apache2/access.log
+
+
+Para acompanhar os logs do Squid, você usaria:
+
+# watch tail -n 20 /var/log/squid/access.log
+
+
+... e assim por diante.
+
+| (pipe): Junto com as setas de redirecionamento (> e >>), o pipe ( | ) é muito usado em scripts e comandos diversos. Ele permite fazer com que a saída de um comando seja enviada para outro ao invés de ser mostrada na tela. Parece uma coisa muito exótica, mas acaba sendo incrivelmente útil, pois permite "combinar" diversos comandos que originalmente não teriam nenhuma relação entre si, de forma que eles façam alguma coisa específica.
+
+Um dos usos mais corriqueiros é usar o pipe e o grep para filtrar a saída de outros comandos, procurando por alguma informação específica. Imagine por exemplo que você quer ver todas as entradas referentes a um determinado endereço IP no log do Apache (ou do Squid, ou de qualquer outro serviço). Você pode usar o comando cat para exibir5 o arquivo de log e usar o pipe e o grep para filtrar a saída, de forma que ele exiba apenas linhas contendo algum endereço específico, como em:
+
+# cat /var/log/apache2/access.log | grep 200.101.213.68
+
+
+Outro exemplo simples: sua placa de rede não está funcionando e você quer saber se o módulo de kernel "sis900", que dá suporte a ela, está carregado. Você pode ver os módulos que estão carregados usando o comando "lsmod", mas a lista é um pouco longa. Você poderia completar o lsmod com "| grep sis900", que vai filtrar usando o grep, mostrando na tela apenas as linhas contendo "sis900". O comando ficaria então "lsmod | grep sis900". Se não aparecer nada na tela, você sabe de antemão que o módulo não está ativo, Neste caso, você poderia tentar carregá-lo manualmente usando o comando "modprobe sis900", como root.
+
+wget : O wget é um gerenciador de downloads bastante competente, que oferece um grande volume de opções, todas usadas via linha de comando. Isso torna ele ideal para situações em que você está acessando um servidor remoto via SSH e precisa baixar um grande arquivo, ou um pacote de instalação. Em vez de primeiro baixar o arquivo para a sua máquina e depois transferí-lo para o servidor, você pode fazer com que o arquivo seja baixado diretamente pelo servidor, economizando tempo.
+
+O uso mais básico é usar o wget seguido da opção "-c", que faz com que ele continue o download caso interrompido, como em:
+
+# wget -c http://download3.vmware.com/software/vmserver/VMware-server-1.0.5-80187.tar.gz
+
+
+Caso a conexão esteja ruim e a transferência esteja parando freqüentemente, você pode especificar um timeout usando a opção "-T", ela faz com que o wget reinicie a transferência caso não receba dados dentro do tempo especificando (em segundos), como em:
+
+# wget -c -T 30 http://download3.vmware.com/software/vmserver/VMware-server-1.0.5-80187.tar.gz
+
+
+Uma dica é que você pode selecionar a URL do arquivo a ser baixado na janela do navegador e colar o texto no terminal usando o botão central do mouse. Se você estiver usando o konsole ou o nome-terminal, você pode também colar o texto da área de transferência clicando com o botão direito sobre o terminal e usando a opção "colar".
+
+ln : O comando ln permite criar links. Existem dois tipos de links suportados pelo Linux, os hard links e os soft links (também chamados de links simbólicos) Os soft links são os mais simples e também os mais usados, eles desempenham a função de um atalho simples, que aponta para um arquivo ou pasta.
+
+O sistema trata o link da mesma forma que o arquivo, de forma que ao gravar informações no link, ou acessar seu conteúdo você está na verdade trabalhando diretamente no arquivo. A principal exceção é que ao mover, deletar ou renomear o link, você altera apenas o link propriamente dito e não o arquivo. Um soft link é um atalho estático, ao mover ou deletar o arquivo, o link fica quebrado.
+
+Os hard links por sua vez são mais intimamente ligados ao arquivo e são alterados junto com ele. Se o arquivo muda de lugar, o link é automaticamente atualizado. Isto é possível porque nos sistemas de arquivos usados pelo Linux cada arquivo possui um código de identificação (o inode), que nunca muda. O sistema sabe que o arquivo renomeado é o mesmo do atalho simplesmente procurando-o pelo inode ao invés do nome. A grande limitação é que os hard links podem ser criados apenas se o link e o arquivo de destino estão dentro da mesma partição. Este é um dos motivos dos links simbólicos serem mais usados.
+
+Se usado sem argumentos, o comando ln cria um hard link, como em:
+
+$ ln /var/www/gdhpress/arquivo /home/gdhpress/arquivo
+
+
+Para criar um link simbólico, acrescente o argumento "-s", como em:
+
+$ ln -s /var/www/gdhpress/html/ /home/gdhpress/html
+
+
+Você verá muitos links espalhados pela estrutura de diretórios do Linux, um recurso muito usado quando os arquivos de sistemas mudam de lugar numa nova versão. Mantendo um link na localização antiga, todos os programas antigos continuam funcionando.
+
+tar : O comando tar pode ser usado para empacotar, compactar e descompactar arquivos, por isso ele acaba sendo uma ferramenta extremamente usada. Por exemplo, para descompactar um arquivo com a extensão .tar.gz, pelo terminal, você usaria o comando:
+
+$ tar -zxvf arquivo.tar.gz
+
+
+Aqui o "tar" é o comando e o "-zxvf" são parâmetros passados para ele. O tar permite tanto compactar quanto descompactar arquivos e pode trabalhar com muitos formatos de arquivos diferentes, por isso é necessário especificar que ele deve descompactar o arquivo (-x) e que o arquivo está comprimido no formato gzip (z). O "v" é na verdade opcional, ele ativa o modo verbose, onde ele lista na tela os arquivos extraídos e para onde foram.
+
+Se você tivesse em mãos um arquivo .tar.bz2 (que usa o bzip2, um formato de compactação diferente do gzip), mudaria a primeira letra dos parâmetros, que passaria a ser "j", indicando o formato, como em:
+
+$ tar -jxvf arquivo.tar.bz2
+
+
+O tar permite também compactar arquivos e pastas diretamente através do terminal. Nesse caso, trocamos a opção "x" (extract) por "c" (create) e passamos a indicar o arquivo que será criado e a pasta ou arquivo que será comprimido, como em:
+
+$ tar -zcvf backup.tar.gz /var/www/gdhpress
+
+
+Nesse exemplo, criamos o arquivo "backup.tar.gz" incluindo o conteúdo da pasta especificada. O formato do arquivo não é indicado pela extensão, mas sim pelo parâmetro "z" incluído no comando.
+
+Se você preferir compactar a pasta usando o bzip2, que é mais demorado, mas em compensação resulta em arquivos menores, pode substituir o "z" por "j", como em:
+
+$ tar -jcvf backup.tar.gz /var/www/gdhpress
+
+
+Histórico: O terminal mantém um histórico dos últimos 500 comandos digitados, que é salvo automaticamente no arquivo ".bash_history", dentro do diretório home.
+
+Para repetir um comando recente, simplesmente pressione as setas para cima ou para baixo até encontrá-lo. Para exibir a lista dos comandos anteriores, use o comando "history", como em:
+
+# history
+
+
+1 joe /etc/init.d/firewall
+ 2 echo 1 > /proc/sys/net/ipv4/tcp_syncookies
+ 3 apt-get install postfix
+ 4 joe /etc/postfix/main.cf
+ 5 tail -n 30 /var/log/apache2/access.log
+
+
+Como você pode ver, os comandos são numerados, de acordo com a ordem em que foram digitados. Inicialmente a lista será pequena, mas com o tempo ela acumulará várias dezenas de comandos. Um recurso interessante é a possibilidade de re-executar qualquer comando da lista chamando-o pelo número, basta usar uma exclamação seguida pelo número com o qual o comando aparece na lista (sem espaço, como em "!23" ou "!4"). Se quisesse executar novamente o comando "echo 1 > /proc/sys/net/ipv4/tcp_syncookies" que aparece como número 2 da lista, por exemplo, usaria:
+
+# !2
+
+
+Como pode ver, o histórico é uma ferramenta bastante útil para lembrar e executar rapidamente comandos muito longos, ou comandos que você executa com freqüência. Você pode também fazer buscas usando o pipe e o grep como em "history | grep cp" (que mostra todas as entradas onde foi usado o comando cp) ou "history | grep apt-get" (que mostra todos os comandos onde foi usado o apt-get).
+
+Ponto e vírgula: Você também pode executar uma fila de comandos de uma vez. Basta separá-los por ponto e vírgula, como em "ls; pwd" ou "cd /mnt/arquivos; ls".
+
+O ponto e vírgula permite também que você agrupe diversos comandos, de forma que eles sejam executados em ordem. Se você precisa baixar 3 arquivos ISOs, por exemplo, você pode agrupar 3 comandos do wget, cada um com um dos arquivos em uma única linha, separados por ponto e vírgula, como em:
+
+$ wget -c http://url/cd1.iso; wget http://url/cd2.iso; wget http://url/cd3.iso
+
+
+Com isso, os 3 arquivos são baixados seqüencialmente, sem necessidade de intervenção.
+
+Case Sensitive: Salvo poucas exceções, todos os comandos e parâmetros dentro de arquivos de configuração são case-sensitive, ou seja, precisam ser digitados literalmente, respeitando as maiúsculas e minúsculas.
+
+Na maioria dos casos, tantos os comandos quanto os parâmetros suportados por eles utilizam letras minúsculas, mas existem exceções, como no caso do comando "MySecureShell" (um shell alternativo para download de arquivos), que precisa ser digitado assim mesmo, com o M e os dois S maiúsculos. Existem ainda muitos casos de comandos que suportam parâmetros com letras maiúsculas e minúsculas, com resultados diferentes.
+
+O comando "ls -s", por exemplo, mostra o tamanho dos arquivos na listagem, enquanto o "ls -S" mostra os arquivos organizados por tamanho (o maior primeiro). Existe um número grande demais de exemplos para citar aqui, o importante é ter em mente que eles existem.
+
+reboot: Reinicia o sistema. Faz par com o halt, que faz o desligamento completo. De uma forma geral, você nunca deve usar o comando "halt" em um servidor remoto, pelo simples fato de que você precisará de alguém no local para ligá-lo novamente depois. Nos poucos casos em que é realmente necessário reiniciar o sistema (como ao atualizar o kernel), use sempre o reboot.
+
+shutdown: Também serve para desligar ou reiniciar o sistema, mas permite que você especifique um horário. É bastante útil no caso dos servidores, pois permite que você agende os reboots do sistema, fazendo-os em horários de baixa demanda.
+
+Especifique um tempo em minutos que o sistema esperará antes de desligar, usando o parâmetro "+" como em shutdown -r +60. Você pode ainda especificar um horário, no formato hh:mm como em shutdown -r +06:00 (para desligar às 6:00 da manhã). Substitua o "-r" por "-h" se quiser desligar o sistema em vez de reiniciar.
+
+Atalhos : Finalizando esta seção de dicas iniciais, aqui vai uma pequena lista de atalhos úteis:
+
+Ctrl+L : Limpa a tela, atalho para o comando "clear". Ao usar bastante o terminal, você acaba se acostumando a usá-lo bastante.
+
+Ctrl+C : Este é um dos atalhos mais usados no terminal, ele serve para terminar a execução de qualquer comando. Se você digitou um "tar -zcvf arquivos.tar.gz /mnt/arquivos" e quer abortar o backup para fazê-lo em outra hora, ou se algum programa bloqueou o teclado e você quer finalizá-lo na marra, o Ctrl+C é a solução.
+
+CTRL+L : Atalho para o comando logout, que encerra a sessão atual. Se você usou o comando "su -" para virar root, o Ctrl+L vai fazê-lo voltar ao prompt inicial. Pressionando Ctrl+L mais uma vez, você faz logout, fechando o terminal.
+
+Ctrl+Alt+Del: Na maioria das distribuições, o Ctrl+Alt+Del é um atalho para o comando "reboot", que reinicia o sistema. Entretanto, ele só funciona se usado em um dos terminais de texto puro. Se usado dentro do modo gráfico, o atalho é lido gerenciador, que provavelmente mostrará a opção de fazer logout.

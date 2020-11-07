@@ -1,0 +1,1 @@
+quando o numero de linhas eh igual ao numero de colunas chama-se matriz regular

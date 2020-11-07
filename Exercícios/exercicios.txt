@@ -1,0 +1,18 @@
+			"Exercícios sobre vectores"
+
+1) Cria um vetor com 10 posições para numeros inteiros
+calcule e mostre 
+a) o maior numero;
+b) o menor numero; 
+c) ordem crescente, ordem decrescente... 
+
+2) Faça um  programa que receba 6 numeros em um vector e mostre:
+a) os numeros pares e a sua soma;
+b) os numeros impares e a sua soma;
+
+3) Faça um  programa que receba 10 numeros em um vector e mostre os numeros primos
+
+Tarefa 
+Pag. 190
+
+exercicio) 1,2,4,7
